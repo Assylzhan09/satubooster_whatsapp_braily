@@ -5,17 +5,18 @@ const qrcode = require("qrcode");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const { state, saveState } = useSingleFileAuthState("./sessions/auth_info.json");
+const { useMultiFileAuthState } = require("@whiskeysockets/baileys");
+const { state, saveCreds } = await useMultiFileAuthState('./sessions');
 
 async function startBot() {
     const { version } = await fetchLatestBaileysVersion();
 
     const sock = makeWASocket({
-        version,
-        auth: state
+      auth: state,
+      printQRInTerminal: true
     });
 
-    sock.ev.on("creds.update", saveState);
+    sock.ev.on("creds.update", saveCreds);
 
     sock.ev.on("connection.update", (update) => {
         const { connection, qr } = update;
